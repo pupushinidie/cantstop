@@ -1,0 +1,33 @@
+{"time": "2026-10-07 17:56:19", "name": "pixen-backdrop", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.012904255787531536}, "seconds": 75.8}
+{"time": "2026-10-07 17:59:05", "name": "v2-climber", "endpoint": "/generate-image-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 166.2, "status": "completed"}
+{"time": "2026-10-07 18:07:23", "name": "avatar", "endpoint": "/generate-image-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 253.1, "status": "completed"}
+{"time": "2026-10-07 18:10:17", "name": "rock", "endpoint": "/generate-image-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 174.0, "status": "completed"}
+{"time": "2026-10-07 18:14:12", "name": "snowrock", "endpoint": "/generate-image-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 235.0, "status": "completed"}
+{"time": "2026-10-07 18:17:36", "name": "tent", "endpoint": "/generate-image-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 204.9, "status": "completed"}
+{"time": "2026-10-07 18:19:54", "name": "pennant", "endpoint": "/generate-image-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 137.8, "status": "completed"}
+{"time": "2026-10-07 18:22:20", "name": "summit-flag", "endpoint": "/generate-image-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 145.6, "status": "completed"}
+{"time": "2026-10-07 18:27:12", "name": "die", "endpoint": "/generate-image-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 291.8, "status": "completed"}
+{"time": "2026-10-07 18:31:04", "name": "icon-dice", "endpoint": "/generate-image-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 232.5, "status": "completed"}
+{"time": "2026-10-07 18:32:55", "name": "icon-camp", "endpoint": "/generate-image-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 110.7, "status": "completed"}
+{"time": "2026-10-07 18:35:31", "name": "icon-rockfall", "endpoint": "/generate-image-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 155.8, "status": "completed"}
+{"time": "2026-10-07 18:37:26", "name": "icon-trophy", "endpoint": "/generate-image-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 114.9, "status": "completed"}
+{"time": "2026-10-07 18:39:43", "name": "sign", "endpoint": "/generate-image-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 137.1, "status": "completed"}
+{"time": "2026-10-07 18:42:00", "name": "campfire", "endpoint": "/generate-image-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 137.3, "status": "completed"}
+{"time": "2026-10-07 18:44:26", "name": "pine", "endpoint": "/generate-image-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 146.0, "status": "completed"}
+{"time": "2026-10-07 18:45:12", "name": "backdrop-dawn-s7", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.009792615413665773}, "seconds": 46.0}
+{"time": "2026-10-07 18:46:42", "name": "backdrop-dawn-s8", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.012844056659274631}, "seconds": 89.7}
+{"time": "2026-10-07 18:47:41", "name": "backdrop-dawn-s9", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.009566702975167169}, "seconds": 59.5}
+{"time": "2026-10-07 18:48:52", "name": "backdrop-dusk-s17", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.010179101546605429}, "seconds": 70.4}
+{"time": "2026-10-07 18:50:13", "name": "backdrop-dusk-s18", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.011403932491938273}, "seconds": 81.0}
+{"time": "2026-10-07 18:51:20", "name": "backdrop-night-s27", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.010385332451926337}, "seconds": 67.7}
+{"time": "2026-10-07 18:52:25", "name": "backdrop-night-s28", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.009850240574942694}, "seconds": 64.9}
+{"time": "2026-10-07 18:53:38", "name": "hero-s37", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.010506234539879693}, "seconds": 72.6}
+{"time": "2026-10-07 18:54:50", "name": "hero-s38", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.01043971135881212}, "seconds": 72.0}
+{"time": "2026-10-07 18:56:00", "name": "hero-s39", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.01004649911986457}, "seconds": 70.1}
+{"time": "2026-10-07 18:57:07", "name": "rocks", "endpoint": "/generate-with-style-v2", "usage": {"type": "usd", "usd": 0.095}, "seconds": 64.7, "status": "completed"}
+{"time": "2026-10-07 18:59:48", "name": "climb-s301", "endpoint": "/animate-with-text-v3", "usage": {"type": "usd", "usd": 0.03789082536432478}, "seconds": 160.6, "status": "completed"}
+{"time": "2026-10-07 19:02:26", "name": "climb-s302", "endpoint": "/animate-with-text-v3", "usage": {"type": "usd", "usd": 0.03580162798696094}, "seconds": 158.1, "status": "completed"}
+{"time": "2026-10-07 19:03:33", "name": "wave-s311", "endpoint": "/animate-with-text-v3", "usage": {"type": "usd", "usd": 0.020005072441365984}, "seconds": 67.1, "status": "completed"}
+{"time": "2026-10-07 19:04:32", "name": "wave-s312", "endpoint": "/animate-with-text-v3", "usage": {"type": "usd", "usd": 0.01814624684386783}, "seconds": 59.3, "status": "completed"}
+{"time": "2026-10-07 19:06:05", "name": "campfire-s321", "endpoint": "/animate-with-text-v3", "usage": {"type": "usd", "usd": 0.024340123726261986}, "seconds": 92.5, "status": "completed"}
+{"time": "2026-10-07 19:07:27", "name": "campfire-s322", "endpoint": "/animate-with-text-v3", "usage": {"type": "usd", "usd": 0.02349314385652542}, "seconds": 82.5, "status": "completed"}

@@ -1,0 +1,48 @@
+{
+  "_说明": "选定的美术，路径相对 art/out/。动画是 [目录, 前缀]。",
+  "climber": "r1/climber/climber-25.png",
+  "avatar": "r1/avatar/avatar-1.png",
+  "rocks": [
+    "r2/rocks/rocks-1.png",
+    "r2/rocks/rocks-8.png",
+    "r2/rocks/rocks-12.png",
+    "r2/rocks/rocks-24.png"
+  ],
+  "snows": [
+    "r1/snowrock/snowrock.png",
+    "r1/snowrock/snowrock-4.png"
+  ],
+  "snowrock": "r1/snowrock/snowrock-4.png",
+  "camp": "r1/tent/tent-1.png",
+  "summit": "r1/summit-flag/summit-flag-4.png",
+  "die": "r1/die/die-2.png",
+  "ui-dice": "r1/icon-dice/icon-dice-24.png",
+  "ui-camp": "r1/icon-camp/icon-camp.png",
+  "ui-rockfall": "r1/icon-rockfall/icon-rockfall-9.png",
+  "ui-trophy": "r1/icon-trophy/icon-trophy-1.png",
+  "ui-sign": "r1/sign/sign.png",
+  "ui-campfire": "r1/campfire/campfire-14.png",
+  "ui-pine": "r1/pine/pine-2.png",
+  "ui-pine2": "r1/pine/pine-13.png",
+  "backdrops": [
+    "probe/pixen-backdrop.png",
+    "r1/backdrop-dawn-s7.png",
+    "r1/backdrop-dawn-s9.png",
+    "r1/backdrop-dusk-s17.png",
+    "r1/backdrop-dusk-s18.png",
+    "r1/backdrop-night-s27.png"
+  ],
+  "hero": "r1/hero-s37.png",
+  "climb": [
+    "r2/climb",
+    "climb-s302"
+  ],
+  "wave": [
+    "r2/wave",
+    "wave-s311"
+  ],
+  "flicker": [
+    "r2/campfire",
+    "campfire-s322"
+  ]
+}
