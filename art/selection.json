@@ -44,5 +44,13 @@
   "flicker": [
     "r2/campfire",
     "campfire-s322"
+  ],
+  "cheer": [
+    "r2/cheer",
+    "cheer-s331"
+  ],
+  "fall": [
+    "r2/fall",
+    "fall-s341"
   ]
 }
