@@ -55,6 +55,14 @@ PixelLab API，密钥只在 `~/.config/pixellab/api_key`，不进仓库。每次
 - `sheet.py`：把一批候选拼成对照图。
 - `selection.json` + `export.py`：选定的图导出到 `apps/web/public/art/`。登山者、头像、营地小旗、山顶大旗只画红色一套，其他座位色把红色像素换色；骰面在选定的空白骰子上按点数画点。
 
+## 画面：白天版和夜间版
+
+只有像素风一种画面（原始版本已删掉），配色分夜间（深色，默认）和白天（白底）两种。顶栏「切换白天版 / 切换夜间版」随时切换，只影响自己看到的画面，记在浏览器的 `gm-pixel-theme` 里；gulugagame.com 上的大厅和各个游戏同源，共用这一个选择。
+
+- 夜间配色就是 `app-pixel.css`（首页和等候房间）和 `cantstop.css`（牌桌）本身。白天版不单独写：`apps/web/day-theme.ts`（Vite 插件）在构建时把这些样式里和颜色有关的声明照抄一份，选择器前加 `:root[data-theme="day"]`，按 `apps/web/day-palette.ts` 的调色表换成白天的颜色。改夜间样式时白天版自动跟着变，只有新出现的深色需要在调色表里补一行。
+- 机械换色不合适的地方在 `apps/web/src/theme-day.css` 里手写。
+- `index.html` 里一小段脚本在样式生效前就给 `<html>` 加上 `data-theme="day"`，打开页面不会先闪一下深色；切换逻辑和按钮在 `src/theme.tsx`。
+
 ## 部署
 
 服务器上 `~/cantstop`，pm2 进程 `cantstop`（端口 3008），网页在 `/var/www/cantstop`，Caddy `handle_path /cantstop/*`（也在付费网关 `@games` 里）。本机运行 `~/projects/deploy.sh cantstop`（服务器拉 GitHub 上的 main）。
