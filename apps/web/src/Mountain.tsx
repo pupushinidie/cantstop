@@ -253,6 +253,7 @@ function Mountain({ game, preview, bust, fresh, nameOf }: MountainProps) {
 /** 一个登山者：位置变化时播放攀爬动画，爬完停在最后一帧。 */
 function Climber({ color, left, top, size }: { color: number; left: number; top: number; size: number }) {
   const [climbing, setClimbing] = useState(true);
+  const [arriving, setArriving] = useState(true);
   const previous = useRef(top);
   useEffect(() => {
     if (previous.current === top) return;
@@ -262,12 +263,15 @@ function Climber({ color, left, top, size }: { color: number; left: number; top:
     return () => window.clearTimeout(timer);
   }, [top]);
   useEffect(() => {
-    const timer = window.setTimeout(() => setClimbing(false), 700);
+    const timer = window.setTimeout(() => {
+      setClimbing(false);
+      setArriving(false);
+    }, 700);
     return () => window.clearTimeout(timer);
   }, []);
   return (
     <span
-      className={climbing ? "cs-climber runner climbing" : "cs-climber runner"}
+      className={["cs-climber", "runner", climbing ? "climbing" : "", arriving ? "arriving" : ""].join(" ")}
       style={{
         left, top, width: size, height: size,
         backgroundImage: `url(${climbing ? climberClimbArt(color) : climberArt(color)})`,

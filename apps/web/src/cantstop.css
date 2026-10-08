@@ -170,9 +170,10 @@
 .cs-climber.runner {
   transition: top 0.55s steps(6, jump-end), left 0.3s;
   filter: drop-shadow(0 0 0 #000) drop-shadow(1px 0 0 rgba(255, 255, 255, 0.85)) drop-shadow(-1px 0 0 rgba(255, 255, 255, 0.85)) drop-shadow(0 -1px 0 rgba(255, 255, 255, 0.85));
-  animation: cs-arrive 0.35s steps(4, jump-none);
 }
 .cs-climber.runner.climbing { background-size: calc(8 * 100%) 100%; animation: cs-climb 0.64s steps(8, jump-none) infinite; }
+/* 刚上路的登山者：边爬边从下面淡入，只播这一次（静止状态不挂动画，免得每次爬完都重播） */
+.cs-climber.runner.climbing.arriving { animation: cs-climb 0.64s steps(8, jump-none) infinite, cs-arrive 0.35s steps(4, jump-none) both; }
 @keyframes cs-climb { from { background-position: 0% 0; } to { background-position: 100% 0; } }
 @keyframes cs-arrive { from { opacity: 0; transform: translateY(30%); } to { opacity: 1; transform: none; } }
 .cs-climber.ghost { z-index: 5; opacity: 0.55; animation: cs-ghost 0.8s steps(2, jump-none) infinite; pointer-events: none; }
@@ -388,7 +389,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cs-decor.campfire, .cs-summit-flag, .cs-climber, .cs-climber.runner, .cs-climber.runner.climbing, .cs-dice.rolling .cs-die, .cs-camp.planted, .cs-climber.ghost { animation: none; transition: none; }
+  .cs-decor.campfire, .cs-summit-flag, .cs-climber, .cs-climber.runner, .cs-climber.runner.climbing, .cs-climber.runner.climbing.arriving, .cs-dice.rolling .cs-die, .cs-camp.planted, .cs-climber.ghost { animation: none; transition: none; }
   .cs-climber.falling, .cs-climber.cheering { animation: none; opacity: 0; }
   .cs-banner { animation-timing-function: steps(1, jump-none); }
 }

@@ -24,7 +24,7 @@ function App() {
   const [mode, setMode] = useState<EntryMode>("create");
   const [name, setName] = useState("");
   const [capacity, setCapacity] = useState<Capacity>(2);
-  const [confirmAction, confirmDialog] = useConfirm(true);
+  const [confirmAction, confirmDialog] = useConfirm();
   const [roomCode, setRoomCode] = useState("");
   const [room, setRoom] = useState<LobbyRoomSnapshot | null>(null);
   const [connected, setConnected] = useState(socket.connected);
@@ -167,7 +167,6 @@ function App() {
       title: "解散房间？",
       detail: "所有玩家都会被移出，当前对局也会结束。",
       confirmLabel: "解散",
-      classicText: "确定解散房间吗？所有玩家都会被移出，当前对局也会结束。",
     });
     if (ok) roomCommand((ack) => socket.emit("room:dissolve", ack));
   }
