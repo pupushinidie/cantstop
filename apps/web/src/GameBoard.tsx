@@ -5,6 +5,7 @@ import {
   type GameCommand,
   type GameEvent,
   type GameState,
+  type LobbyMember,
   type LobbyRoomSnapshot,
   type Runner,
 } from "@cantstop/game";
@@ -27,6 +28,8 @@ interface GameBoardProps {
   readonly chat: ReactNode;
   readonly onCommand: (command: GameCommand) => void;
   readonly onRematch: (accept: boolean) => void;
+  /** 打开 / 取消自己的托管。 */
+  readonly onAuto: (enabled: boolean) => void;
   readonly onDissolve: () => void;
   /** 观战时从这位玩家的座位看。 */
   readonly watchId: string;
@@ -76,7 +79,7 @@ function describeEvent(event: GameEvent, name: (id: string) => string): string |
 
 type Banner = { readonly key: string; readonly text: string; readonly tone: "bust" | "summit" | "turn" | "win" };
 
-function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, chat, onCommand, onRematch, onDissolve, watchId, onLeave }: GameBoardProps) {
+function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, chat, onCommand, onRematch, onAuto, onDissolve, watchId, onLeave }: GameBoardProps) {
   const game = room.game!;
   const member = room.members.find((candidate) => candidate.id === socket.id);
   // 观战的人没有座位：牌桌按 watchId 那位玩家的座位摆（me 就是他），但什么都不能点，也不叫「你」。
@@ -89,7 +92,9 @@ function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, 
   const secondsLeft = useCountdown(room);
   const nameOf = (playerId: string) => (playerId === selfId ? "你" : game.players.find((player) => player.id === playerId)?.name ?? "?");
   const colorOf = (playerId: string) => game.players.find((player) => player.id === playerId)?.color ?? 0;
-  const connected = (playerId: string) => room.members.find((candidate) => candidate.playerId === playerId)?.connected ?? false;
+  const memberOf = (playerId: string) => room.members.find((candidate) => candidate.playerId === playerId);
+  // 托管中：人机替我行动，提示条上给一个「取消托管」
+  const autoPlaying = member?.auto === true;
   // 「对局已开始」这类提示只留到第一步动作
   const firstVersion = useRef(game.version);
   const shownNotice = game.version === firstVersion.current ? notice : "";
@@ -142,7 +147,7 @@ function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, 
       if (ended) setBanner({ key, text: `${nameOf(ended.winner)} 登顶 3 座山峰，获胜！`, tone: "win" });
       else if (claims.length > 0) setBanner({ key, text: `${nameOf(stopped.player)} 登顶 ${joinColumns(claims.map((claim) => claim.column))} 号！`, tone: "summit" });
     }
-    if (started && started.player === selfId && !busted && claims.length === 0) {
+    if (started && started.player === selfId && !autoPlaying && !busted && claims.length === 0) {
       setBanner({ key, text: "轮到你了", tone: "turn" });
     }
   }, [game.version]);
@@ -173,6 +178,7 @@ function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, 
 
   let prompt: string;
   if (game.phase === "finished") prompt = `${nameOf(game.finalResult!.winner)} 获胜`;
+  else if (autoPlaying) prompt = myTurn ? "托管中：人机正在替你走" : "托管中：轮到你时人机替你走";
   else if (myTurn && game.stage === "roll") prompt = "轮到你了：掷骰子";
   else if (myTurn && game.stage === "choose") prompt = "选一种走法（鼠标停在选项上可以预览）";
   else if (myTurn) prompt = "再掷一次，还是收手扎营？";
@@ -208,8 +214,11 @@ function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, 
       <div className="cs-layout">
         <section className="cs-stage" style={{ backgroundImage: `url(${backdropFor(room.code)})` }}>
           <div className="cs-hud">
-            <div className={myTurn ? "cs-prompt mine" : "cs-prompt"} role="status">
+            <div className={myTurn || autoPlaying ? "cs-prompt mine" : "cs-prompt"} role="status">
               <i className="cs-dot" style={{ background: seat.hex }} />{prompt}
+              {autoPlaying && game.phase === "playing" && (
+                <button className="quiet-button cs-auto-cancel" type="button" onClick={() => onAuto(false)}>取消托管</button>
+              )}
             </div>
             {(error || shownNotice) && <p className={error ? "cs-feedback error" : "cs-feedback"} role={error ? "alert" : "status"}>{error || shownNotice}</p>}
           </div>
@@ -225,7 +234,7 @@ function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, 
 
         <aside className="cs-side">
           <DiceTray game={game} myTurn={myTurn} busy={busy} rollKey={rollKey} onCommand={onCommand} onPreview={setPreview} />
-          <Players game={game} myId={selfId} connected={connected} />
+          <Players game={game} myId={selfId} memberOf={memberOf} />
           <section className="cs-panel cs-log">
             <h3>登山日志</h3>
             {log.length === 0 ? <p className="cs-muted">还没有动作。</p> : <ul>{log.map((line) => <li key={line.key}>{line.text}</li>)}</ul>}
@@ -257,16 +266,18 @@ function ClaimedSlots({ game, playerId }: { game: GameState; playerId: string })
   );
 }
 
-function Players({ game, myId, connected }: { game: GameState; myId: string; connected: (id: string) => boolean }) {
+function Players({ game, myId, memberOf }: { game: GameState; myId: string; memberOf: (id: string) => LobbyMember | undefined }) {
   return (
     <section className="cs-panel cs-players">
       <h3>登山队 <small>先占领 {game.config.columnsToWin} 条赛道获胜</small></h3>
       {game.players.map((player, index) => {
         const active = game.phase === "playing" && game.currentPlayer === index;
         const camps = COLUMNS.filter((column) => (player.progress[column] ?? 0) > 0 && !game.owners[column]).length;
+        const seated = memberOf(player.id);
+        const offline = !seated?.connected;
         return (
           <div
-            className={["cs-player", active ? "active" : "", !connected(player.id) ? "offline" : ""].join(" ")}
+            className={["cs-player", active ? "active" : "", offline ? "offline" : ""].join(" ")}
             key={player.id}
             style={{ "--seat": seatOf(player.color).hex } as CSSProperties}
           >
@@ -275,7 +286,10 @@ function Players({ game, myId, connected }: { game: GameState; myId: string; con
               <strong>
                 {player.name}
                 {player.id === myId && <small className="cs-you">你</small>}
-                {!connected(player.id) && <small className="cs-offline">离线</small>}
+                {seated?.bot && <small className="cs-bot">人机</small>}
+                {/* 离线的人也由人机代打 */}
+                {!seated?.bot && (seated?.auto || offline) && <small className="cs-auto">托管</small>}
+                {offline && <small className="cs-offline">离线</small>}
               </strong>
               <span>{active ? (game.stage === "roll" ? "准备掷骰" : `本回合已掷 ${game.rollsThisTurn} 次`) : `营地 ${camps} 处`}</span>
             </div>
