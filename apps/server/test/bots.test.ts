@@ -18,14 +18,6 @@ import {
 function humanMove(game: GameState, actions: GameCommand[]): GameCommand {
   return game.stage === "decide" ? { type: "STOP" } : actions[0]!;
 }
-/** 房间人数选项里最大的。 */
-const MAX_CAPACITY: Capacity = 4;
-// ----------------------------------------
-
-// 人机立刻行动、每一步 300 ms 超时，测试才跑得快（服务端在导入时读这两个变量）。
-process.env.BOT_DELAY_SCALE = "0";
-process.env.TURN_MS = "300";
-
 /** 这位玩家自己做了点什么（不是超时、不是轮到他）。 */
 function actedBy(room: LobbyRoomSnapshot, playerId: string): boolean {
   return room.game?.events.some((event) => {
@@ -33,6 +25,18 @@ function actedBy(room: LobbyRoomSnapshot, playerId: string): boolean {
     return "player" in event && event.player === playerId && type !== "TurnTimedOut" && type !== "TurnStarted";
   }) === true;
 }
+/** 最小的房间人数选项、开局至少几人。 */
+const MIN_CAPACITY: Capacity = 2;
+const MIN_PLAYERS = 2;
+/** 「一个人加满人机」用几人房；「加满后加不了」用几人房。 */
+const SOLO_CAPACITY: Capacity = 4;
+const FULL_TEST_CAPACITY: Capacity = 3;
+// ----------------------------------------
+
+// 人机立刻行动、每一步 300 ms 超时，测试才跑得快（服务端在导入时读这两个变量）。
+process.env.BOT_DELAY_SCALE = "0";
+process.env.TURN_MS = "300";
+
 
 type TestSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -63,12 +67,17 @@ function call<T>(send: (ack: (response: AckResponse<T>) => void) => void): Promi
 }
 
 async function create(client: TestSocket, name: string, capacity: Capacity): Promise<LobbyRoomSnapshot> {
-  const response = await call<LobbyRoomSnapshot>((ack) => client.emit("room:create", { name, capacity }, ack));
+  const response = await call<LobbyRoomSnapshot>((ack) => client.emit("room:create", { name, capacity } as never, ack));
   if (!response.ok) throw new Error(response.error);
   return response.data;
 }
 
 const addBot = (client: TestSocket) => call<void>((ack) => client.emit("room:add-bot", ack));
+
+/** 再加几个人机，凑够开局人数。 */
+async function addBotsUpTo(host: TestSocket, humansSeated: number): Promise<void> {
+  for (let seat = humansSeated; seat < MIN_PLAYERS; seat += 1) expect((await addBot(host)).ok).toBe(true);
+}
 const start = (client: TestSocket) => call<LobbyRoomSnapshot>((ack) => client.emit("room:start", ack));
 
 function lobby(client: TestSocket): Promise<PublicRoomSummary[]> {
@@ -138,13 +147,13 @@ describe("人机", () => {
   it("只有房主能加人机；坐满后加不了；房主能移出人机；首页列表标出人机", async () => {
     const host = await connect();
     const hostName = nick("房主");
-    const { code } = await create(host, hostName, 3);
+    const { code } = await create(host, hostName, FULL_TEST_CAPACITY);
     const guest = await connect();
     expect((await call<LobbyRoomSnapshot>((ack) => guest.emit("room:join", { name: nick("客人"), code }, ack))).ok).toBe(true);
 
     expect((await addBot(guest)).ok).toBe(false);
-    expect((await addBot(host)).ok).toBe(true);
-    const room = await updateWhere(host, (snapshot) => snapshot.members.length === 3);
+    for (let seat = 2; seat < FULL_TEST_CAPACITY; seat += 1) expect((await addBot(host)).ok).toBe(true);
+    const room = await updateWhere(host, (snapshot) => snapshot.members.length === FULL_TEST_CAPACITY);
     const bot = room.members.find((member) => member.bot)!;
     expect(bot).toMatchObject({ name: "咕噜一号", isHost: false, connected: true, bot: true });
     expect((await addBot(host)).ok).toBe(false);
@@ -158,10 +167,10 @@ describe("人机", () => {
 
   it("一个人加满人机就能开局，人机把整局打完；人机自动同意再来一局", async () => {
     const host = await connect();
-    await create(host, nick("独行"), MAX_CAPACITY);
-    for (let seat = 1; seat < MAX_CAPACITY; seat += 1) expect((await addBot(host)).ok).toBe(true);
-    const names = (await updateWhere(host, (snapshot) => snapshot.members.length === MAX_CAPACITY)).members.map((member) => member.name);
-    expect(names.slice(1)).toEqual(["咕噜一号", "咕噜二号", "咕噜三号"].slice(0, MAX_CAPACITY - 1));
+    await create(host, nick("独行"), SOLO_CAPACITY);
+    for (let seat = 1; seat < SOLO_CAPACITY; seat += 1) expect((await addBot(host)).ok).toBe(true);
+    const names = (await updateWhere(host, (snapshot) => snapshot.members.length === SOLO_CAPACITY)).members.map((member) => member.name);
+    expect(names.slice(1)).toEqual(["咕噜一号", "咕噜二号", "咕噜三号", "咕噜四号"].slice(0, SOLO_CAPACITY - 1));
 
     expect((await start(host)).ok).toBe(true);
     const stop = autoplay(host);
@@ -172,13 +181,13 @@ describe("人机", () => {
 
     expect((await call<void>((ack) => host.emit("room:rematch", true, ack))).ok).toBe(true);
     const again = await updateWhere(host, (snapshot) => snapshot.game !== undefined && snapshot.game.phase !== "finished" && !snapshot.rematch);
-    expect(again.game!.players).toHaveLength(MAX_CAPACITY);
+    expect(again.game!.players).toHaveLength(SOLO_CAPACITY);
   }, 90_000);
 
   it("等待中最后一个真人离开，只剩人机的房间直接关掉", async () => {
     const host = await connect();
     const hostName = nick("房主");
-    await create(host, hostName, 2);
+    await create(host, hostName, MIN_CAPACITY);
     expect((await addBot(host)).ok).toBe(true);
     expect((await lobby(host)).some((candidate) => candidate.players[0]?.name === hostName)).toBe(true);
     expect((await call<void>((ack) => host.emit("room:leave", ack))).ok).toBe(true);
@@ -188,8 +197,9 @@ describe("人机", () => {
   it("连续超时两次转托管，由人机代打；取消托管后交还", async () => {
     const idle = await connect();
     const active = await connect();
-    const { code } = await create(idle, nick("发呆"), 2);
+    const { code } = await create(idle, nick("发呆"), MIN_CAPACITY);
     expect((await call<LobbyRoomSnapshot>((ack) => active.emit("room:join", { name: nick("认真"), code }, ack))).ok).toBe(true);
+    await addBotsUpTo(idle, 2);
     expect((await start(idle)).ok).toBe(true);
     const stop = autoplay(active);
 
@@ -212,8 +222,9 @@ describe("人机", () => {
     const leaver = await connect();
     const stayer = await connect();
     const leaverName = nick("掉线");
-    const { code } = await create(leaver, leaverName, 2);
+    const { code } = await create(leaver, leaverName, MIN_CAPACITY);
     expect((await call<LobbyRoomSnapshot>((ack) => stayer.emit("room:join", { name: nick("留下"), code }, ack))).ok).toBe(true);
+    await addBotsUpTo(leaver, 2);
     const started = await start(leaver);
     if (!started.ok) throw new Error(started.error);
     const leaverSeat = started.data.members.find((member) => member.id === leaver.id)!.playerId;
