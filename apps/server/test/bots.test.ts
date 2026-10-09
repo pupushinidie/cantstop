@@ -28,7 +28,10 @@ process.env.TURN_MS = "300";
 
 /** 这位玩家自己做了点什么（不是超时、不是轮到他）。 */
 function actedBy(room: LobbyRoomSnapshot, playerId: string): boolean {
-  return room.game?.events.some((event) => "player" in event && event.player === playerId && event.type !== "TurnTimedOut" && event.type !== "TurnStarted") === true;
+  return room.game?.events.some((event) => {
+    const type: string = event.type;
+    return "player" in event && event.player === playerId && type !== "TurnTimedOut" && type !== "TurnStarted";
+  }) === true;
 }
 
 type TestSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -102,9 +105,9 @@ function autoplay(client: TestSocket): () => void {
   let sentFor = "";
   const handler = (room: LobbyRoomSnapshot) => {
     const game = room.game;
-    if (!game || game.phase !== "playing") return;
+    if (!game || game.phase === "finished") return;
     const actions = legalActions(game, seatOf(client));
-    const key = `${game.turn}:${game.step}`;
+    const key = String(game.version);
     if (actions.length === 0 || sentFor === key) return;
     sentFor = key;
     client.emit("game:command", humanMove(game, actions), () => {});
@@ -168,7 +171,7 @@ describe("人机", () => {
     expect(finished.rematch?.acceptedIds.sort()).toEqual(bots.sort());
 
     expect((await call<void>((ack) => host.emit("room:rematch", true, ack))).ok).toBe(true);
-    const again = await updateWhere(host, (snapshot) => snapshot.game?.phase === "playing" && !snapshot.rematch);
+    const again = await updateWhere(host, (snapshot) => snapshot.game !== undefined && snapshot.game.phase !== "finished" && !snapshot.rematch);
     expect(again.game!.players).toHaveLength(MAX_CAPACITY);
   }, 90_000);
 
