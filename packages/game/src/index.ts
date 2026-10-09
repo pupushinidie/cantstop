@@ -14,6 +14,21 @@ export {
 } from "./engine.js";
 export type { NewPlayer } from "./engine.js";
 export { botCommand } from "./bot.js";
+export {
+  anchorVisible,
+  createPracticeGame,
+  createTutorialGame,
+  createTutorialRng,
+  optionAnchor,
+  runnersAtTop,
+  sameCommand,
+  TUTORIAL_DICE,
+  TUTORIAL_RIVAL,
+  TUTORIAL_RIVAL_NAME,
+  TUTORIAL_SELF,
+  TUTORIAL_STEPS,
+} from "./tutorial.js";
+export type { TutorialFace, TutorialRng, TutorialStep } from "./tutorial.js";
 export { createRng } from "./rng.js";
 export type { Rng } from "./rng.js";
 export { CAPACITY_OPTIONS, DEFAULT_ROOM_ACCESS } from "./roomTypes.js";
