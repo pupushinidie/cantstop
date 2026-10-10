@@ -4,7 +4,7 @@
  * 教程在浏览器里直接跑规则引擎，不连服务器：骰子按 TUTORIAL_DICE 出，对手按剧本走，
  * 所以「对手贪心爆掉」这种关键一幕一定会发生。剧本走完接一局练习：对手交给人机，骰子换成普通随机数。
  *
- * 每一步写三件事：咕噜嘎说什么（say / note）、高亮哪个元素（anchor，对应网页里的 data-tut="…"）、
+ * 每一步写三件事：咕噜嘎说什么（say / note）、高亮哪个元素（anchor，对应网页里的 data-tutorial="…"）、
  * 等玩家做什么（do 步骤的 expect）。改了规则或界面，tutorial.test.ts 会检查剧本还能不能从头走到尾。
  */
 import { COLUMN_HEIGHTS, type Column } from "./board.js";
@@ -26,9 +26,9 @@ interface StepBase {
   /** 触屏设备上换成这句说明（比如「鼠标停在选项上」在手机上不成立）。 */
   readonly noteTouch?: string;
   /**
-   * 高亮哪个元素：网页里 data-tut 的值。
-   * 固定的有 mountain、dice、roll、stop、odds、players；选项是 option:<和>+<和>（如 option:7+7），
-   * 本回合的登山者是 runner:<路号>。
+   * 高亮哪个元素：网页里 data-tutorial 的值。
+   * 固定的有 mountain、dice、roll、stop、odds、players、hint；选项是 option:<和>+<和>（如 option:7+7），
+   * 本回合的登山者是 runner:<路号>，被占领的路是 claimed:<路号>。
    */
   readonly anchor?: string;
   readonly face?: TutorialFace;
@@ -66,7 +66,7 @@ export const TUTORIAL_STEPS: readonly TutorialStep[] = [
   },
   { kind: "do", id: "again", lesson: "再掷", anchor: "roll", expect: { type: "ROLL" }, say: "可以接着掷，也可以收手。先点「再掷」。" },
   {
-    kind: "do", id: "three", lesson: "最多 3 个登山者", anchor: "option:6+8", expect: { type: "CHOOSE", sums: [6, 8] },
+    kind: "do", id: "three", lesson: "3 个登山者", anchor: "option:6+8", expect: { type: "CHOOSE", sums: [6, 8] },
     say: "选「走 6 和 8」。",
     note: "你一共只有 3 个登山者，现在全派出去了：这回合接下来只能在 6、7、8 号路上爬。",
   },
@@ -90,15 +90,60 @@ export const TUTORIAL_STEPS: readonly TutorialStep[] = [
     say: "咕噜一号太贪心，爆掉了！",
     note: "它掷出 1、1、2、6，凑不出正在爬的 4、6、10 号路，这回合爬的全没了。之前扎好的营地不受影响。",
   },
+  { kind: "do", id: "turn2", lesson: "营地上方接着爬", anchor: "roll", expect: { type: "ROLL" }, say: "又轮到你了，点「掷骰」。" },
+  {
+    kind: "do", id: "resume", anchor: "option:2+8", expect: { type: "CHOOSE", sums: [2, 8] },
+    say: "选「走 2 和 8」。",
+    note: "8 号路上有你的营地，登山者从营地上方一格接着爬，不用从山脚重来。",
+  },
+  { kind: "do", id: "again2", anchor: "roll", expect: { type: "ROLL" }, say: "2 号路只有 3 格，冲一冲：点「再掷」。" },
+  {
+    kind: "do", id: "only", lesson: "只能走一条", anchor: "option:2+7", expect: { type: "CHOOSE", sums: [2, 7] },
+    say: "选「走 2 和 7」。",
+    note: "另一种分法是 4 和 5，都是新路，可登山者只剩 1 个，所以只能挑一条走（「只走 4」「只走 5」）。",
+  },
+  { kind: "do", id: "again3", anchor: "roll", expect: { type: "ROLL" }, say: "2 号路还差 1 格，再掷一次。" },
+  {
+    kind: "do", id: "top", lesson: "登顶占领", anchor: "option:2+8", expect: { type: "CHOOSE", sums: [2, 8] },
+    say: "选「走 2 和 8」，爬上 2 号路的路顶！",
+  },
+  {
+    kind: "info", id: "attop", anchor: "runner:2", face: "think",
+    say: "到顶了，但还要收手才算占领。",
+    note: "这时候再掷要是爆掉，这次登顶也一起作废。",
+  },
+  {
+    kind: "do", id: "claim", anchor: "stop", expect: { type: "STOP" },
+    say: "点「收手扎营」，把 2 号路占下来。",
+  },
+  {
+    kind: "info", id: "claimed", anchor: "claimed:2", face: "happy",
+    say: "你占领了 2 号路！",
+    note: "这条路关闭了，谁都不能再走；别人在这条路上的营地全部撤下。",
+  },
+  {
+    kind: "info", id: "win", lesson: "怎样获胜", anchor: "players",
+    say: "先占领 3 条路的人立刻获胜。",
+    note: "真实对局里每一步限时 45 秒，连续超时 2 次会转成人机托管，点「取消托管」就能收回。",
+  },
   {
     kind: "info", id: "finale", finale: true, face: "happy",
-    say: "你已经会玩了！先占领 3 条路就赢。",
-    note: "接下来和咕噜一号把这局打完。拿不准的时候点「提示」，我告诉你我会怎么走。",
+    say: "你已经会玩了！",
+    note: "接下来和咕噜一号把这局打完。拿不准的时候点「提示」（键盘 H），我告诉你我会怎么走。",
   },
 ];
 
-/** 剧本里每一掷的骰子，按顺序：你掷两次，咕噜一号掷三次（最后一次爆掉）。用完以后是普通的随机数。 */
-export const TUTORIAL_DICE: readonly number[] = [3, 4, 2, 5, 1, 5, 2, 6, 2, 2, 3, 3, 5, 5, 4, 6, 1, 1, 2, 6];
+/**
+ * 剧本里每一掷的骰子，按顺序：你掷两次，咕噜一号掷三次（最后一次爆掉），你再掷三次（登顶 2 号路）。
+ * 用完以后是普通的随机数。
+ */
+export const TUTORIAL_DICE: readonly number[] = [
+  3, 4, 2, 5, 1, 5, 2, 6, // 你：7 走两步；走 6 和 8
+  2, 2, 3, 3, 5, 5, 4, 6, 1, 1, 2, 6, // 咕噜一号：走 4 和 6；10 走两步；爆掉
+  1, 1, 4, 4, // 你：走 2 和 8（另一种是 5 走两步）
+  1, 1, 3, 4, // 走 2 和 7（或只走 4 / 只走 5）
+  1, 1, 3, 5, // 只能走 2 和 8：2 号路到顶
+];
 
 /** 教程开局：你先手，对手是咕噜一号。 */
 export function createTutorialGame(selfName: string, seed = 20261009): GameState {
@@ -159,6 +204,10 @@ export function anchorVisible(state: GameState, anchor: string, viewer: string):
   if (anchor === "stop" || anchor === "odds") return myTurn && state.stage === "decide";
   if (anchor.startsWith("option:")) {
     return myTurn && state.stage === "choose" && state.options.some((option) => optionAnchor(option.sums) === anchor);
+  }
+  if (anchor.startsWith("claimed:")) {
+    const column = Number(anchor.slice("claimed:".length)) as Column;
+    return state.owners[column] !== undefined;
   }
   if (anchor.startsWith("runner:")) {
     const column = Number(anchor.slice("runner:".length)) as Column;

@@ -111,7 +111,7 @@ function Mountain({ game, preview, bust, fresh, nameOf }: MountainProps) {
   });
 
   return (
-    <div className="cs-mountain" ref={ref}>
+    <div className="cs-mountain" ref={ref} data-tutorial="mountain">
       <div className="cs-board" style={{ width: px(BOARD_W), height: px(BOARD_H), "--u": u } as CSSProperties}>
         {/* 山脚的地面（往两边延伸到舞台边缘），路牌立在上面；两侧是松树和营火，窄屏放不下就被裁掉 */}
         <span className="cs-ground" style={{ left: px(-400), top: px(GROUND), width: px(BOARD_W + 800), height: px(BASE) }} />
@@ -156,7 +156,7 @@ function Mountain({ game, preview, bust, fresh, nameOf }: MountainProps) {
               })}
               {owner !== undefined && (
                 <>
-                  <span className="cs-claim-tint" style={block(left, cellY(height), { height: px(ROW * height) })} />
+                  <span className="cs-claim-tint" data-tutorial={`claimed:${column}`} style={block(left, cellY(height), { height: px(ROW * height) })} />
                   <span
                     className={fresh?.summits.includes(column) ? "cs-summit-flag fresh" : "cs-summit-flag"}
                     key={fresh?.summits.includes(column) ? fresh.key : "flag"}
@@ -196,6 +196,7 @@ function Mountain({ game, preview, bust, fresh, nameOf }: MountainProps) {
           return (
             <Climber
               key={`runner-${runner.column}`}
+              anchor={`runner:${runner.column}`}
               color={runnerColor}
               left={px(spriteX(index))}
               top={px(climberY(runner.height))}
@@ -251,7 +252,7 @@ function Mountain({ game, preview, bust, fresh, nameOf }: MountainProps) {
 }
 
 /** 一个登山者：位置变化时播放攀爬动画，爬完停在最后一帧。 */
-function Climber({ color, left, top, size }: { color: number; left: number; top: number; size: number }) {
+function Climber({ color, left, top, size, anchor }: { color: number; left: number; top: number; size: number; anchor: string }) {
   const [climbing, setClimbing] = useState(true);
   const [arriving, setArriving] = useState(true);
   const previous = useRef(top);
@@ -272,6 +273,7 @@ function Climber({ color, left, top, size }: { color: number; left: number; top:
   return (
     <span
       className={["cs-climber", "runner", climbing ? "climbing" : "", arriving ? "arriving" : ""].join(" ")}
+      data-tutorial={anchor}
       style={{
         left, top, width: size, height: size,
         backgroundImage: `url(${climbing ? climberClimbArt(color) : climberArt(color)})`,

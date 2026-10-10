@@ -63,11 +63,35 @@ describe("新手教程剧本", () => {
     const afterRival = playScript(stepIndex("rival") + 1);
     expect(afterRival.lastRoll).toMatchObject({ player: TUTORIAL_RIVAL, dice: [1, 1, 2, 6], bust: true });
     expect(afterRival.events.some((event) => event.type === "Busted" && event.player === TUTORIAL_RIVAL)).toBe(true);
-    // 爆掉以后轮回到你，正等着掷骰：教程最后一步接练习局
+    // 爆掉以后轮回到你，正等着掷骰
     expect(afterRival.players[afterRival.currentPlayer]!.id).toBe(TUTORIAL_SELF);
     expect(afterRival.stage).toBe("roll");
     const rival = afterRival.players.find((player) => player.id === TUTORIAL_RIVAL)!;
     expect(rival.progress.every((height) => height === 0)).toBe(true);
+  });
+
+  it("第二回合：从营地上方接着爬、「只走一条」的选项出现、2 号路登顶后收手占领", () => {
+    const beforeResume = playScript(stepIndex("resume"));
+    expect(beforeResume.options.map((option) => option.sums)).toEqual(expect.arrayContaining([[2, 8], [5, 5]]));
+    const afterResume = playScript(stepIndex("resume") + 1);
+    // 8 号路的营地在 1 格，登山者从 2 格开始
+    expect(afterResume.runners).toEqual(expect.arrayContaining([{ column: 2, height: 1 }, { column: 8, height: 2 }]));
+
+    const beforeOnly = playScript(stepIndex("only"));
+    const sums = beforeOnly.options.map((option) => option.sums.join("+")).sort();
+    expect(sums).toEqual(["2+7", "4", "5"]);
+
+    const beforeTop = playScript(stepIndex("top"));
+    expect(beforeTop.options.map((option) => option.sums)).toEqual([[2, 8]]);
+    const atTop = playScript(stepIndex("attop"));
+    expect(atTop.runners).toEqual(expect.arrayContaining([{ column: 2, height: 3 }]));
+    expect(atTop.stage).toBe("decide");
+
+    const claimed = playScript(stepIndex("claim") + 1);
+    expect(claimed.owners[2]).toBe(TUTORIAL_SELF);
+    expect(claimed.events.some((event) => event.type === "ColumnClaimed" && event.column === 2 && event.player === TUTORIAL_SELF)).toBe(true);
+    expect(claimed.phase).toBe("playing");
+    expect(claimed.players[claimed.currentPlayer]!.id).toBe(TUTORIAL_RIVAL);
   });
 
   it("剧本本身：步骤 id 不重复，最后一步是唯一的收尾，说明文字不空", () => {

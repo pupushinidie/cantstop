@@ -15,6 +15,9 @@ import GameRules from "./GameRules.js";
 import { GameRoomMenu } from "./RoomExtras.js";
 import Mountain, { type BustGhosts, type Fresh } from "./Mountain.js";
 import { socket } from "./socket.js";
+import { Coach, TipToast } from "./tutorial/Coach.js";
+import { useFirstTimeTips } from "./tutorial/tips.js";
+import { detectTips, GAME_ID, hintFor, TIPS, type Hint } from "./tutorialGame.js";
 
 interface GameBoardProps {
   readonly room: LobbyRoomSnapshot;
@@ -36,6 +39,16 @@ interface GameBoardProps {
   readonly onWatch: (playerId: string) => void;
   /** 观战的人离开。 */
   readonly onLeave: () => void;
+  /** 自己在 room.members 里的 id；默认是 socket.id（新手教程里不连服务器，传固定值）。 */
+  readonly selfMemberId?: string;
+  /**
+   * online：真实对局（只有自己和人机时能看「提示」，第一次遇到某条规则时弹小贴士）；
+   * tutorial：新手教程的剧本进行中（咕噜嘎在讲，不出提示和小贴士）；
+   * practice：教程后的练习局（随时能看提示）。
+   */
+  readonly mode?: "online" | "tutorial" | "practice";
+  /** 结算框里代替「再来一局」的按钮（教程的练习局用）。 */
+  readonly finalActions?: ReactNode;
 }
 
 function useCountdown(room: LobbyRoomSnapshot): number | null {
@@ -79,9 +92,12 @@ function describeEvent(event: GameEvent, name: (id: string) => string): string |
 
 type Banner = { readonly key: string; readonly text: string; readonly tone: "bust" | "summit" | "turn" | "win" };
 
-function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, chat, onCommand, onRematch, onAuto, onDissolve, watchId, onLeave }: GameBoardProps) {
+function GameBoard({
+  room, busy, error, notice, brand, connection, themeToggle, chat, onCommand, onRematch, onAuto, onDissolve, watchId, onLeave,
+  selfMemberId, mode = "online", finalActions,
+}: GameBoardProps) {
   const game = room.game!;
-  const member = room.members.find((candidate) => candidate.id === socket.id);
+  const member = room.members.find((candidate) => candidate.id === (selfMemberId ?? socket.id));
   // 观战的人没有座位：牌桌按 watchId 那位玩家的座位摆（me 就是他），但什么都不能点，也不叫「你」。
   const spectating = !member;
   const myId = member?.playerId ?? watchId;
@@ -95,6 +111,26 @@ function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, 
   const memberOf = (playerId: string) => room.members.find((candidate) => candidate.playerId === playerId);
   // 托管中：人机替我行动，提示条上给一个「取消托管」
   const autoPlaying = member?.auto === true;
+
+  // 「提示」：练习局随时能用；真实对局里只有自己和人机时能用（有别的真人就不显示，免得不公平）
+  const botsOnly = room.members.length > 1 && room.members.every((candidate) => candidate.playerId === myId || candidate.bot === true);
+  const canHint = !spectating && !autoPlaying && myTurn && (mode === "practice" || (mode === "online" && botsOnly));
+  const [hint, setHint] = useState<{ version: number; hint: Hint } | null>(null);
+  const shownHint = hint && hint.version === game.version && canHint ? hint.hint : null;
+  const toggleHint = () => setHint((current) => (current && current.version === game.version ? null : { version: game.version, hint: hintFor(game, myId) }));
+  useEffect(() => {
+    if (!canHint) return;
+    const handle = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (event.metaKey || event.ctrlKey || event.altKey || target?.closest("input, textarea, [contenteditable]")) return;
+      if (event.key.toLowerCase() === "h") toggleHint();
+    };
+    window.addEventListener("keydown", handle);
+    return () => window.removeEventListener("keydown", handle);
+  }, [canHint, game.version]);
+
+  // 真实对局里第一次遇到某条规则（第一次爆掉、有人登顶……）时弹一句小贴士
+  const tips = useFirstTimeTips(GAME_ID, game.version, () => detectTips(game, myId), TIPS, mode === "online" && !spectating);
   // 「对局已开始」这类提示只留到第一步动作
   const firstVersion = useRef(game.version);
   const shownNotice = game.version === firstVersion.current ? notice : "";
@@ -219,6 +255,11 @@ function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, 
               {autoPlaying && game.phase === "playing" && (
                 <button className="quiet-button cs-auto-cancel" type="button" onClick={() => onAuto(false)}>取消托管</button>
               )}
+              {canHint && (
+                <button className={shownHint ? "quiet-button cs-hint on" : "quiet-button cs-hint"} type="button" data-tutorial="hint" onClick={toggleHint}>
+                  提示<kbd>H</kbd>
+                </button>
+              )}
             </div>
             {(error || shownNotice) && <p className={error ? "cs-feedback error" : "cs-feedback"} role={error ? "alert" : "status"}>{error || shownNotice}</p>}
           </div>
@@ -242,7 +283,23 @@ function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, 
           <div className="cs-chat">{chat}</div>
         </aside>
       </div>
-      {game.phase === "finished" && <FinalDialog game={game} room={room} myId={selfId} spectating={spectating} onRematch={onRematch} onLeave={onLeave} />}
+      {game.phase === "finished" && (
+        <FinalDialog game={game} room={room} myId={selfId} spectating={spectating} onRematch={onRematch} onLeave={onLeave} actions={finalActions} />
+      )}
+      {shownHint && (
+        <Coach
+          view={{
+            key: `hint-${game.version}`,
+            say: shownHint.say,
+            ...(shownHint.note ? { note: shownHint.note } : {}),
+            anchor: shownHint.anchor,
+            focus: false,
+            face: "think",
+            actions: <button className="quiet-button" type="button" onClick={() => setHint(null)}>知道了</button>,
+          }}
+        />
+      )}
+      {tips.tip && <TipToast tip={tips.tip} onClose={tips.dismiss} onNever={tips.never} />}
     </div>
   );
 }
@@ -268,7 +325,7 @@ function ClaimedSlots({ game, playerId }: { game: GameState; playerId: string })
 
 function Players({ game, myId, memberOf }: { game: GameState; myId: string; memberOf: (id: string) => LobbyMember | undefined }) {
   return (
-    <section className="cs-panel cs-players">
+    <section className="cs-panel cs-players" data-tutorial="players">
       <h3>登山队 <small>先占领 {game.config.columnsToWin} 条赛道获胜</small></h3>
       {game.players.map((player, index) => {
         const active = game.phase === "playing" && game.currentPlayer === index;
@@ -301,13 +358,15 @@ function Players({ game, myId, memberOf }: { game: GameState; myId: string; memb
   );
 }
 
-function FinalDialog({ game, room, myId, spectating, onRematch, onLeave }: {
+function FinalDialog({ game, room, myId, spectating, onRematch, onLeave, actions }: {
   game: GameState;
   room: LobbyRoomSnapshot;
   myId: string;
   spectating: boolean;
   onRematch: (accept: boolean) => void;
   onLeave: () => void;
+  /** 有就用它代替「再来一局」那一段（教程的练习局）。 */
+  actions?: ReactNode;
 }) {
   const result = game.finalResult!;
   const accepted = room.rematch?.acceptedIds.includes(socket.id ?? "") ?? false;
@@ -327,7 +386,11 @@ function FinalDialog({ game, room, myId, spectating, onRematch, onLeave }: {
             </li>
           ))}
         </ol>
-        {spectating ? (
+        {actions ? (
+          <div className="cs-rematch">
+            <div className="gm-panel-actions">{actions}</div>
+          </div>
+        ) : spectating ? (
           <div className="cs-rematch">
             <span>{room.rematch ? `等玩家决定要不要再来一局（${room.rematch.acceptedIds.length}/${room.members.length} 人同意）` : "对局结束"}</span>
             <div className="gm-panel-actions">

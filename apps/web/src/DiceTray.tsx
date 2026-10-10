@@ -4,6 +4,7 @@ import {
   PAIRINGS,
   advanceRunners,
   bustProbability,
+  optionAnchor,
   type GameCommand,
   type GameState,
   type MoveOption,
@@ -63,8 +64,9 @@ function useTumble(dice: readonly number[] | undefined, rollKey: string | null):
   return { faces, rolling };
 }
 
-function optionLabel(option: MoveOption): string {
-  const [first, second] = option.sums;
+/** 选项上的字：「7 走两步」「走 6 和 8」「只走 9」。 */
+export function optionLabel(sums: readonly number[]): string {
+  const [first, second] = sums;
   if (second === undefined) return `只走 ${first}`;
   if (first === second) return `${first} 走两步`;
   return `走 ${first} 和 ${second}`;
@@ -145,7 +147,7 @@ function DiceTray({ game, myTurn, busy, rollKey, onCommand, onPreview }: DiceTra
   const seat = seatOf(roller?.color ?? current.color);
 
   return (
-    <section className={["cs-panel", "cs-dice-tray", myTurn ? "mine" : ""].join(" ")} style={{ "--seat": seat.hex } as CSSProperties}>
+    <section className={["cs-panel", "cs-dice-tray", myTurn ? "mine" : ""].join(" ")} style={{ "--seat": seat.hex } as CSSProperties} data-tutorial="dice">
       <div className="cs-dice-head">
         <h3>
           {game.lastRoll
@@ -173,6 +175,7 @@ function DiceTray({ game, myTurn, busy, rollKey, onCommand, onPreview }: DiceTra
               key={option.sums.join("+")}
               type="button"
               className={hovered === index ? "cs-option hovered" : "cs-option"}
+              data-tutorial={optionAnchor(option.sums)}
               disabled={busy}
               onMouseEnter={() => preview(index)}
               onFocus={() => preview(index)}
@@ -180,7 +183,7 @@ function DiceTray({ game, myTurn, busy, rollKey, onCommand, onPreview }: DiceTra
               onClick={() => onCommand({ type: "CHOOSE", sums: [...option.sums] })}
             >
               <OptionDice dice={game.lastRoll!.dice} option={option} />
-              <strong>{optionLabel(option)}<kbd>{index + 1}</kbd></strong>
+              <strong>{optionLabel(option.sums)}<kbd>{index + 1}</kbd></strong>
             </button>
           ))}
         </div>
@@ -197,18 +200,18 @@ function DiceTray({ game, myTurn, busy, rollKey, onCommand, onPreview }: DiceTra
 
       {myTurn && game.stage !== "choose" && (
         <div className="cs-actions">
-          <button className="primary-button cs-roll" type="button" disabled={busy || rolling} onClick={() => onCommand({ type: "ROLL" })}>
+          <button className="primary-button cs-roll" type="button" data-tutorial="roll" disabled={busy || rolling} onClick={() => onCommand({ type: "ROLL" })}>
             <img src={iconArt.dice} alt="" />{game.stage === "roll" ? "掷骰" : "再掷"}<kbd>R</kbd>
           </button>
           {game.stage === "decide" && (
-            <button className={winsIfStop ? "quiet-button cs-stop win" : "quiet-button cs-stop"} type="button" disabled={busy || rolling} onClick={() => onCommand({ type: "STOP" })}>
+            <button className={winsIfStop ? "quiet-button cs-stop win" : "quiet-button cs-stop"} type="button" data-tutorial="stop" disabled={busy || rolling} onClick={() => onCommand({ type: "STOP" })}>
               <img src={iconArt.camp} alt="" />{winsIfStop ? "收手 · 获胜！" : "收手扎营"}<kbd>S</kbd>
             </button>
           )}
         </div>
       )}
       {myTurn && game.stage === "decide" && (
-        <p className="cs-odds">
+        <p className="cs-odds" data-tutorial="odds">
           {showOdds && odds !== null && (
             <span className={odds >= 0.4 ? "danger" : odds >= 0.2 ? "warn" : ""}>再掷爆掉的概率 {Math.round(odds * 100)}%</span>
           )}

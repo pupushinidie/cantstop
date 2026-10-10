@@ -335,6 +335,13 @@
 .cs-auto { margin-left: 6px; color: var(--gold); }
 /* 托管时提示条上的「取消托管」：提示条整体不接收点击，按钮单独打开 */
 .cs-auto-cancel { margin-left: 12px; padding: 2px 8px; font-size: 12px; pointer-events: auto; }
+/* 只有自己和人机时（或教程的练习局）提示条上的「提示」：人机替你算一步 */
+.cs-hint { margin-left: 12px; padding: 2px 8px; font-size: 12px; pointer-events: auto; }
+.cs-hint kbd { margin-left: 4px; }
+.cs-hint.on { color: var(--gold); }
+/* 新手教程：侧栏的聊天位置换成教程进度。剧本进行中咕噜嘎会讲每一步，登山日志只留最新一条；练习局留三行左右。好让 1440×790 也一屏放下 */
+.tut-script .cs-log ul { max-height: 26px; }
+.tut-practice .cs-log ul { max-height: 64px; }
 .cs-slots { display: inline-flex; gap: 4px; }
 .cs-slot { position: relative; display: block; width: 24px; height: 32px; background: var(--bg); box-shadow: inset 0 0 0 var(--px) #3d5482; }
 .cs-slot.filled { background: none; box-shadow: none; }
