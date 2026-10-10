@@ -111,8 +111,8 @@ function Mountain({ game, preview, bust, fresh, nameOf }: MountainProps) {
   });
 
   return (
-    <div className="cs-mountain" ref={ref} data-tutorial="mountain">
-      <div className="cs-board" style={{ width: px(BOARD_W), height: px(BOARD_H), "--u": u } as CSSProperties}>
+    <div className="cs-mountain" ref={ref}>
+      <div className="cs-board" data-tutorial="mountain" style={{ width: px(BOARD_W), height: px(BOARD_H), "--u": u } as CSSProperties}>
         {/* 山脚的地面（往两边延伸到舞台边缘），路牌立在上面；两侧是松树和营火，窄屏放不下就被裁掉 */}
         <span className="cs-ground" style={{ left: px(-400), top: px(GROUND), width: px(BOARD_W + 800), height: px(BASE) }} />
         {DECOR.map((item) => (

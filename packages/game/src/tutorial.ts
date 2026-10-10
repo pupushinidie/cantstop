@@ -52,21 +52,21 @@ export const TUTORIAL_STEPS: readonly TutorialStep[] = [
     say: "这座山有 11 条路，编号 2 到 12。",
     note: "先占领 3 条路（爬到路顶）的人获胜。7 最容易掷出，所以 7 号路最长；2 号和 12 号最短。",
   },
-  { kind: "do", id: "roll", lesson: "掷骰", anchor: "roll", expect: { type: "ROLL" }, say: "点「掷骰」，一次掷 4 颗骰子。" },
+  { kind: "do", id: "roll", lesson: "掷骰分组", anchor: "roll", expect: { type: "ROLL" }, say: "点「掷骰」，一次掷 4 颗骰子。" },
   {
-    kind: "do", id: "pair", lesson: "两两分组选路", anchor: "option:7+7", expect: { type: "CHOOSE", sums: [7, 7] },
+    kind: "do", id: "pair", anchor: "option:7+7", expect: { type: "CHOOSE", sums: [7, 7] },
     say: "4 颗骰子两两一组，每组的和就是要爬的路。",
     note: "选「7 走两步」：两组都是 7，7 号路一口气爬 2 格。鼠标停在选项上，山上会先预览。",
     noteTouch: "选「7 走两步」：两组都是 7，7 号路一口气爬 2 格。",
   },
   {
-    kind: "info", id: "runner", lesson: "登山者是临时的", anchor: "runner:7", face: "think",
+    kind: "info", id: "runner", lesson: "临时登山者", anchor: "runner:7", face: "think",
     say: "这是你的登山者，它的位置还没存下来。",
     note: "回合结束前要「收手扎营」才算数，不然全部作废。",
   },
-  { kind: "do", id: "again", lesson: "再掷", anchor: "roll", expect: { type: "ROLL" }, say: "可以接着掷，也可以收手。先点「再掷」。" },
+  { kind: "do", id: "again", anchor: "roll", expect: { type: "ROLL" }, say: "可以接着掷，也可以收手。先点「再掷」。" },
   {
-    kind: "do", id: "three", lesson: "3 个登山者", anchor: "option:6+8", expect: { type: "CHOOSE", sums: [6, 8] },
+    kind: "do", id: "three", lesson: "最多 3 个", anchor: "option:6+8", expect: { type: "CHOOSE", sums: [6, 8] },
     say: "选「走 6 和 8」。",
     note: "你一共只有 3 个登山者，现在全派出去了：这回合接下来只能在 6、7、8 号路上爬。",
   },
@@ -90,7 +90,7 @@ export const TUTORIAL_STEPS: readonly TutorialStep[] = [
     say: "咕噜一号太贪心，爆掉了！",
     note: "它掷出 1、1、2、6，凑不出正在爬的 4、6、10 号路，这回合爬的全没了。之前扎好的营地不受影响。",
   },
-  { kind: "do", id: "turn2", lesson: "营地上方接着爬", anchor: "roll", expect: { type: "ROLL" }, say: "又轮到你了，点「掷骰」。" },
+  { kind: "do", id: "turn2", lesson: "登顶占领", anchor: "roll", expect: { type: "ROLL" }, say: "又轮到你了，点「掷骰」。" },
   {
     kind: "do", id: "resume", anchor: "option:2+8", expect: { type: "CHOOSE", sums: [2, 8] },
     say: "选「走 2 和 8」。",
@@ -98,13 +98,13 @@ export const TUTORIAL_STEPS: readonly TutorialStep[] = [
   },
   { kind: "do", id: "again2", anchor: "roll", expect: { type: "ROLL" }, say: "2 号路只有 3 格，冲一冲：点「再掷」。" },
   {
-    kind: "do", id: "only", lesson: "只能走一条", anchor: "option:2+7", expect: { type: "CHOOSE", sums: [2, 7] },
+    kind: "do", id: "only", anchor: "option:2+7", expect: { type: "CHOOSE", sums: [2, 7] },
     say: "选「走 2 和 7」。",
     note: "另一种分法是 4 和 5，都是新路，可登山者只剩 1 个，所以只能挑一条走（「只走 4」「只走 5」）。",
   },
   { kind: "do", id: "again3", anchor: "roll", expect: { type: "ROLL" }, say: "2 号路还差 1 格，再掷一次。" },
   {
-    kind: "do", id: "top", lesson: "登顶占领", anchor: "option:2+8", expect: { type: "CHOOSE", sums: [2, 8] },
+    kind: "do", id: "top", anchor: "option:2+8", expect: { type: "CHOOSE", sums: [2, 8] },
     say: "选「走 2 和 8」，爬上 2 号路的路顶！",
   },
   {
