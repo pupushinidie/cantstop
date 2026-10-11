@@ -14,6 +14,7 @@ import DiceTray, { ROLL_MS } from "./DiceTray.js";
 import GameRules from "./GameRules.js";
 import { GameRoomMenu } from "./RoomExtras.js";
 import Mountain, { type BustGhosts, type Fresh } from "./Mountain.js";
+import { useCountdownSfx, useGameSfx } from "./game-sfx.js";
 import { socket } from "./socket.js";
 import { Coach, TipToast } from "./tutorial/Coach.js";
 import { useFirstTimeTips } from "./tutorial/tips.js";
@@ -111,6 +112,9 @@ function GameBoard({
   const memberOf = (playerId: string) => room.members.find((candidate) => candidate.playerId === playerId);
   // 托管中：人机替我行动，提示条上给一个「取消托管」
   const autoPlaying = member?.auto === true;
+  // 动作音效（见 game-sfx.ts）；自己行动的最后 5 秒每秒一声
+  useGameSfx(game, selfId);
+  useCountdownSfx(myTurn && !autoPlaying, secondsLeft);
 
   // 「提示」：练习局随时能用；真实对局里只有自己和人机时能用（有别的真人就不显示，免得不公平）
   const botsOnly = room.members.length > 1 && room.members.every((candidate) => candidate.playerId === myId || candidate.bot === true);

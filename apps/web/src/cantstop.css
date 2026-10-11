@@ -410,3 +410,7 @@
   .app-shell .cs-showcase img { width: 40px; height: 40px; }
   .app-shell .cs-showcase .cs-showcase-die { width: 24px; height: 24px; margin-left: 0; }
 }
+
+/* ♪ 声音按钮在新手教程的压暗层（.tut-block，z-index 1000）上面也能点，面板也压在它上面：随时能调音量。 */
+.gm-music-toggle { position: relative; z-index: 1004; }
+body .gm-music-panel { z-index: 1005; }
