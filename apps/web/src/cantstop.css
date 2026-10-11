@@ -389,7 +389,9 @@
 @media (max-width: 760px) {
   .cs-side { grid-template-columns: 1fr; }
   .cs-topbar { flex-wrap: wrap; }
-  .cs-topbar-right { margin-left: auto; }
+  /* 右边一排按钮放不下时折到下一行，别把「游戏规则」「已连接」挤成竖排 */
+  .cs-topbar-right { margin-left: auto; flex-wrap: wrap; justify-content: flex-end; row-gap: 8px; }
+  .cs-topbar-right > * { flex-shrink: 0; white-space: nowrap; }
   .cs-stage { padding: 52px 4px 0; }
   .cs-banner { font-size: 12px; }
   .cs-banner.win { font-size: 24px; }
