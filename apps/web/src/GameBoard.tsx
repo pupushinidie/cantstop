@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import {
   COLUMNS,
   type Column,
@@ -54,8 +54,8 @@ interface GameBoardProps {
 
 function useCountdown(room: LobbyRoomSnapshot): number | null {
   const [now, setNow] = useState(Date.now());
-  const [anchor, setAnchor] = useState({ at: Date.now(), ms: room.turnRemainingMs });
-  useEffect(() => setAnchor({ at: Date.now(), ms: room.turnRemainingMs }), [room]);
+  // 锚点和 room 在同一次渲染里算好：放在 effect 里的话，换步骤的第一帧会用上一步的剩余时间（倒计时音效会误响一声）
+  const anchor = useMemo(() => ({ at: Date.now(), ms: room.turnRemainingMs }), [room]);
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 500);
     return () => window.clearInterval(timer);
