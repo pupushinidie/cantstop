@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { CAPACITY_OPTIONS, type Capacity, type GameCommand, type LobbyRoomSnapshot, type PublicRoomSummary } from "@cantstop/game";
-import { climberArt, dieArt, sceneArt, SEATS } from "./art.js";
+import { backdropFor, climberArt, dieArt, sceneArt, SEATS } from "./art.js";
 import { useConfirm } from "./confirm.js";
 import GameBoard from "./GameBoard.js";
 import GameRules from "./GameRules.js";
@@ -298,7 +298,8 @@ function App() {
 
   if (room) {
     return (
-      <main className="app-shell">
+      <main className="app-shell cs-room">
+        <CsBackdrop code={room.code} />
         <header className="topbar">
           <Brand />
           <div className="topbar-right">
@@ -334,7 +335,8 @@ function App() {
   }
 
   return (
-    <main className="app-shell">
+    <main className="app-shell cs-home">
+      <CsBackdrop code="" />
       <header className="topbar">
         <Brand />
         <div className="topbar-right">
@@ -469,6 +471,16 @@ function App() {
       <OnlineRooms rooms={lobbyRooms} connected={connected} busy={busy} onJoin={joinListed} />
       <footer className="page-footer">再掷一次，还是就此扎营？</footer>
     </main>
+  );
+}
+
+/** 全屏背景：把对局场景铺满窗口（16:9 居中裁切），上面盖一层罩色让面板更突出。首页和等候房间放在 <main> 的第一个子元素。 */
+function CsBackdrop({ code }: { code: string }) {
+  return (
+    <div className="cs-backdrop" aria-hidden="true">
+      <div className="cs-backdrop-art" style={{ backgroundImage: `url(${backdropFor(code)})` }} />
+      <div className="cs-backdrop-veil" />
+    </div>
   );
 }
 

@@ -5,6 +5,10 @@
 :root[data-theme="day"] { color-scheme: light; }
 :root[data-theme="day"] .app-shell * { scrollbar-color: #aebad0 var(--bg); }
 
+/* 全屏背景：白天版罩色变浅 */
+:root[data-theme="day"] .cs-backdrop { background: #dfe8f5; }
+:root[data-theme="day"] .cs-backdrop-veil { background: #ffffff; opacity: 0.25; }
+
 /* 雪山场景里叠着的提示条、横幅还是深底，字和描边用回夜间的颜色 */
 :root[data-theme="day"] .cs-stage { --text: #eef3fb; --muted: #93a3bd; --edge: #04060c; --shade: #080c17; }
 

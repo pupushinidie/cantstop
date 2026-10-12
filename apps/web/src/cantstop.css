@@ -18,6 +18,21 @@
     inset calc(var(--px) * -1) calc(var(--px) * -1) 0 0 var(--shade);
 }
 
+/* ---------- 全屏背景：首页、等候房间的场景铺满窗口 ---------- */
+.cs-backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: #0c1120; }
+.cs-backdrop-art {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100vw, calc(100vh * 16 / 9));
+  height: max(100vh, calc(100vw * 9 / 16));
+  transform: translate(-50%, -50%);
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+}
+.cs-backdrop-veil { position: absolute; inset: 0; background: #080c17; opacity: 0.4; }
+.app-shell.cs-home > :not(.cs-backdrop):not(.gm-modal-backdrop), .app-shell.cs-room > :not(.cs-backdrop):not(.gm-modal-backdrop) { position: relative; z-index: 1; }
+
 /* ---------- 首页：主图和登山者 / 骰子 ---------- */
 .app-shell .brand-mark i:nth-child(2) { background: #eef3fb; }
 .app-shell .cs-hero {
